@@ -15,13 +15,13 @@
     dest: "/etc/profile.d/{{ ruby_package }}.sh"
     mode: 0644
 
-- name: "Verify Ruby: {{ ruby_package }}} exists"
+- name: "Verify ruby package {{ ruby_package }} exists"
   stat:
     path: "/opt/rh/{{ ruby_package }}/enable"
   changed_when: false
   register: scl_ruby_ver_result
 
-- name: "Install GEM: {{ item.name }} for ruby app"
+- name: "Install explicit gems for ruby app"
   become: true
   gem:
     name: "{{ item.name }}"

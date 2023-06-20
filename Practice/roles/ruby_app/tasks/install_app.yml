@@ -6,7 +6,7 @@
     owner: root
     group: root
     directory_mode: true
-    nofity: Restart Ruby App Service
+  nofity: Restart Ruby App Service
 
 - name: Install app dependencies through builder
   ansible.builtin.shell: "source /etc/profile.d/{{ ruby_package }}.sh && bundle config build.nokogiri --use-system-libraries && bundle install --clean --no-cache --without development"
