@@ -1,0 +1,34 @@
+---
+- name: Ensure ruby repo are installed.
+  ansible.builtin.yum:
+    name: "{{ ruby_repo_packages }}"
+    state: present
+
+- name: Ensure ruby app dependencies are installed.
+  ansible.builtin.yum:
+    name: "{{ ruby_app_dependency_packages }}"
+    state: present
+
+- name: Set profile file for ruby.
+  ansible.builtin.template:
+    src: ruby.sh.j2
+    dest: "/etc/profile.d/{{ ruby_package }}.sh"
+    mode: 0644
+
+- name: "Verify Ruby: {{ ruby_package }}} exists"
+  stat:
+    path: "/opt/rh/{{ ruby_package }}/enable"
+  changed_when: false
+  register: scl_ruby_ver_result
+
+- name: "Install GEM: {{ item.name }} for ruby app"
+  become: true
+  gem:
+    name: "{{ item.name }}"
+    state: "{{ item.state | default('present') }}"
+    version: "{{ item.version | default(omit) }}"
+    source: "{{ item.source | default(omit) }}"
+    user_install: false
+    executable: "scl enable {{ ruby_package }} -- gem"
+  when: scl_ruby_ver_result.stat.exists
+  with_items: "{{ ruby_gem_dependencies }}"

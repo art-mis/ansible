@@ -2,11 +2,13 @@
 After=network.target
 
 [Service]
-Type=forking
+Type=simple
 WorkingDirectory={{ ruby_app_full_path }}
 ExecStartPre=/bin/bash -lc '/opt/rh/{{ ruby_package }}/root/usr/local/bin/bundle exec rake db:migrate'
 ExecStart=/bin/bash -lc '/opt/rh/{{ ruby_package }}/root/usr/local/bin/bundle exec puma -b unix:///var/run/puma.sock -e $RAILS_ENV config.ru'
+ExecStop=/bin/kill -9 $MAINPID
 Restart=on-failure
+KillMode=process
 {% for env in ruby_app_environment %}
 Environment={{ env.name }}={{ env.value }}
 {% endfor %}

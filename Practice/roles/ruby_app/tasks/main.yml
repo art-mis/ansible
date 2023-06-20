@@ -1,0 +1,4 @@
+---
+- include_tasks: install_ruby.yml
+
+- include_tasks: install_app.yml

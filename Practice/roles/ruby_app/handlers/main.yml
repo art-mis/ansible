@@ -1,0 +1,5 @@
+---
+- name: Restart Ruby App Service
+  ansible.builtin.systemd:
+    state: restarted
+    name: "{{ ruby_app_service }}"

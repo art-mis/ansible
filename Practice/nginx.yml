@@ -1,5 +1,5 @@
 ---
-- name: "Install load balancer"
+- name: "Install nginx as reverse proxy for the ruby app"
   become: true
   hosts: centos7-test
   vars:
@@ -21,3 +21,8 @@
         name: nginx
         state: restarted
       when: result.changed
+
+    - name: Ensure Nginx Service started
+      ansible.builtin.systemd:
+        name: nginx
+        state: started
