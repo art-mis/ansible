@@ -1,0 +1,23 @@
+---
+- name: "Install load balancer"
+  become: true
+  hosts: centos7-test
+  vars:
+    ruby_app_socket: /var/run/puma.sock
+
+  roles:
+    - nginxinc.nginx
+
+  tasks:
+    - name: Set profile file for ruby.
+      ansible.builtin.template:
+        src: templates/nginx.conf.j2
+        dest: "/etc/nginx/conf.d/default.conf"
+        mode: 0644
+      register: result
+
+    - name: Restart Nginx Service
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+      when: result.changed

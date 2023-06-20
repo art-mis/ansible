@@ -1,0 +1,15 @@
+[Unit]
+After=network.target
+
+[Service]
+Type=forking
+WorkingDirectory={{ ruby_app_full_path }}
+ExecStartPre=/bin/bash -lc '/opt/rh/{{ ruby_package }}/root/usr/local/bin/bundle exec rake db:migrate'
+ExecStart=/bin/bash -lc '/opt/rh/{{ ruby_package }}/root/usr/local/bin/bundle exec puma -b unix:///var/run/puma.sock -e $RAILS_ENV config.ru'
+Restart=on-failure
+{% for env in ruby_app_environment %}
+Environment={{ env.name }}={{ env.value }}
+{% endfor %}
+
+[Install]
+WantedBy=multi-user.target

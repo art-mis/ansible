@@ -1,0 +1,52 @@
+---
+- name: Ensure ruby repo are installed.
+  ansible.builtin.yum:
+    name: "{{ ruby_repo_packages }}"
+    state: present
+
+- name: Ensure ruby app dependencies are installed.
+  ansible.builtin.yum:
+    name: "{{ ruby_app_dependency_packages }}"
+    state: present
+
+- name: Set profile file for ruby.
+  ansible.builtin.template:
+    src: ruby.sh.j2
+    dest: "/etc/profile.d/{{ ruby_package }}.sh"
+    mode: 0644
+
+- name: Install explicit dependencies through gem
+  ansible.builtin.shell: "source /etc/profile.d/{{ ruby_package }}.sh && gem install {{ item.name }}:{{ item.version }}"
+  args:
+    executable: /bin/bash
+  with_items: "{{ ruby_gem_dependencies }}"
+
+- name: Copy app content to opt directory
+  ansible.builtin.copy:
+    src: "{{ ruby_app_dir }}"
+    dest: /opt/
+    owner: root
+    group: root
+
+- name: Install app dependencies through builder
+  ansible.builtin.shell: "source /etc/profile.d/{{ ruby_package }}.sh && bundle config build.nokogiri --use-system-libraries && bundle install --clean --no-cache --without development"
+  args:
+    executable: /bin/bash
+    chdir: "{{ ruby_app_full_path }}"
+  register: result
+  failed_when: "result.rc != 0 and 'Bundle complete!' not in result.stdout"
+
+- name: Create systemd unit file for ruby app.
+  ansible.builtin.template:
+    src: ruby_app.service.j2
+    dest: "/etc/systemd/system/{{ ruby_app_service }}.service"
+    mode: 0644
+
+- name: Reload systemd to reread configs
+  ansible.builtin.systemd:
+    daemon_reload: true
+
+- name: Make sure a service unit for ruby app is running
+  ansible.builtin.systemd:
+    state: started
+    name: "{{ ruby_app_service }}"

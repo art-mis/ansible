@@ -1,0 +1,3 @@
+# create new
+source /opt/rh/{{ ruby_package }}/enable
+export X_SCLS="`scl enable {{ ruby_package }} 'echo $X_SCLS'`"
