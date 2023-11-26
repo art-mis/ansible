@@ -1,0 +1,48 @@
+---
+- name: "Initial PostgreSQL, Nginx, Ruby and target app"
+  become: true
+  hosts: centos7-test
+  vars:
+    postgresql_users:
+      - name: ruby_user
+        db: ruby_app
+        password: testtesttest
+        encrypted: true
+    postgresql_databases:
+      - name: ruby_app
+        owner: ruby_user
+    ruby_app_environment:
+      - name: SECRET_KEY_BASE
+        value: "12345678"
+      - name: RAILS_ENV
+        value: production
+      - name: RAILS_LOG_TO_STDOUT
+        value: 1
+      - name: DB_HOST
+        value: 127.0.0.1
+      - name: DB_PORT
+        value: 5432
+      - name: DB_NAME
+        value: ruby_app
+      - name: DB_USER
+        value: ruby_user
+      - name: DB_PASSWORD
+        value: testtesttest
+
+  pre_tasks:
+    - name: "Put SELinux in permissive mode"
+      ansible.posix.selinux:
+        policy: targeted
+        state: permissive
+      become: true
+
+  roles:
+    - postgresql
+    - nginxinc.nginx
+    - ruby_app
+
+  tasks:
+    - name: Restart Nginx Service
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted

@@ -1,0 +1,47 @@
+---
+ruby_version: 2.5
+
+ruby_package: "rh-ruby{{ ruby_version | replace('.', '') }}"
+ruby_bin_path: "/opt/rh/{{ ruby_package }}/root/bin"
+
+app_git_repo: "https://{{ username | urlencode }}:{{ password | urlencode }}@gitlab.slurm.io/edu/xpaste_practicum.git"
+
+ruby_app_dir: xpaste_practicum
+ruby_app_service: ruby_app
+ruby_app_full_path: /opt/{{ ruby_app_dir }}
+ruby_app_socket: /var/run/puma.sock
+
+ruby_repo_packages:
+  - centos-release-scl
+  - centos-release-scl-rh
+
+ruby_app_dependency_packages:
+  - "@Development tools"
+  - "{{ ruby_package }}"
+  - "{{ ruby_package }}-ruby-devel"
+  - libxml2-devel
+  - nodejs
+
+ruby_gem_dependencies:
+  - name: bundler
+    version: 1.16.2
+  - name: nokogiri
+    version: 1.8.2
+
+ruby_app_environment:
+  - name: SECRET_KEY_BASE
+    value: "12345678"
+  - name: RAILS_ENV
+    value: production
+  - name: RAILS_LOG_TO_STDOUT
+    value: 1
+  - name: DB_HOST
+    value: 127.0.0.1
+  - name: DB_PORT
+    value: 5432
+  - name: DB_NAME
+    value: postgres
+  - name: DB_USER
+    value: postgres
+  - name: DB_PASSWORD
+    value: postgres
